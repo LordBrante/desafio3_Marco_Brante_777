@@ -1,0 +1,126 @@
+create database desafio3_Marco_Brante_777;
+--Script para crear tablas usuarios, post y comentarios
+create table usuarios (usuario_id int ,email varchar(50),
+					   nombre varchar(50),apellido varchar(50),rol varchar);
+					   
+create table post (post_id int,titulo varchar(50),
+					   contenido text,fecha_creacion timestamp,
+						fecha_actualizacion timestamp, destacado boolean,
+					   usuario_id bigint);	
+					   
+create table comentarios (comentario_id int,
+					   contenido text,fecha_creacion timestamp,
+						usuario_id bigint, post_id bigint);		
+--Scripst para insertar datos en tabla usuarios						
+insert into usuarios (usuario_id,email,nombre,apellido,rol) values
+(1,'manuel@gmail.com','Manuel','Rodriguez','Administrador');
+insert into usuarios (usuario_id,email,nombre,apellido,rol) values
+(2,'jose_maria@gmail.com','Jose','Montenegro','Usuario');
+insert into usuarios (usuario_id,email,nombre,apellido,rol) values
+(3,'ezequiel@gmail.com','Ezequiel','Rojas','Usuario');
+insert into usuarios (usuario_id,email,nombre,apellido,rol) values
+(4,'marco@gmail.com','Marco','Brante','Administrador');
+insert into usuarios (usuario_id,email,nombre,apellido,rol) values
+(5,'natalia@gmail.com','Natalia','Avello','Usuario');
+--Scripst para insertar datos en tabla post						
+insert into post (post_id,titulo,contenido,fecha_creacion,fecha_actualizacion,destacado,usuario_id) values
+(1,'Guerra en tierra Santa','Lorem ipsum dolor sit amet, consectetur adipiscing elit','2023-10-02',
+	'2023-10-10', FALSE,4);
+insert into post (post_id,titulo,contenido,fecha_creacion,fecha_actualizacion,destacado,usuario_id) values
+(2,'Consecuencias del Covid','toz toz en covid','2023-09-02',
+	'2023-10-21', TRUE,4);
+insert into post (post_id,titulo,contenido,fecha_creacion,fecha_actualizacion,destacado,usuario_id) values
+(3,'el Mejor juego de Spider-Man','Doble Spider-Man, doble diversion','2023-10-03',
+	'2023-10-20', FALSE,2);
+insert into post (post_id,titulo,contenido,fecha_creacion,fecha_actualizacion,destacado,usuario_id) values
+(4,'Desafio Latam aporta en conocimiento','Aprendemos a base de Desafios','2022-10-02',
+	'2023-08-12', TRUE,3);
+insert into post (post_id,titulo,contenido,fecha_creacion,fecha_actualizacion,destacado,usuario_id) values
+(5,'Los mejores Juegos del 2023','Quien se lleva el GOTY?','2023-06-02',
+	'2023-10-21', FALSE,null);	
+--Script para insertar datos en tabla comentarios
+insert into comentarios(comentario_id,contenido,fecha_creacion,usuario_id, post_id) values
+(1,'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum',
+ '2023-08-21',1,1);
+insert into comentarios(comentario_id,contenido,fecha_creacion,usuario_id, post_id) values
+(2,'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur',
+ '2023-10-21',2,1);
+insert into comentarios(comentario_id,contenido,fecha_creacion,usuario_id, post_id) values
+(3,'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat',
+ '2023-10-18',3,1);
+insert into comentarios(comentario_id,contenido,fecha_creacion,usuario_id, post_id) values
+(4,'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?',
+ '2023-09-03',1,2);
+insert into comentarios(comentario_id,contenido,fecha_creacion,usuario_id, post_id) values
+(5,'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.',
+ '2023-10-15',2,2);
+ 
+/* Querys a Evaluar
+1. Crea y agrega al entregable las consultas para completar el setup de acuerdo a lo pedido
+2. Cruza los datos de la tabla usuarios y posts, mostrando las siguientes columnas:
+nombre y email del usuario junto al título y contenido del post*/
+
+select u.nombre||' '||u.apellido as "Nombre", u.email, ps.titulo, ps.contenido 
+from usuarios u join post ps on u.usuario_id = ps.usuario_id;
+
+/*3. Muestra el id, título y contenido de los posts de los administradores.
+a. El administrador puede ser cualquier id.*/
+
+select u.rol, ps.titulo, ps.contenido from usuarios u join post ps on u.usuario_id=ps.usuario_id
+where u.rol = 'Administrador';
+
+--variante sin mostrar Rol
+select ps.titulo, ps.contenido from usuarios u join post ps on u.usuario_id=ps.usuario_id
+where u.rol = 'Administrador';
+
+/*4. Cuenta la cantidad de posts de cada usuario.
+a. La tabla resultante debe mostrar el id e email del usuario junto con la
+cantidad de posts de cada usuario.*/
+
+select u.usuario_id,u.email, count(*) as "Cantidad de Post"
+from usuarios u
+right join post ps ON u.usuario_id = ps.usuario_id
+group by u.usuario_id,u.email
+order by u.usuario_id asc;
+
+/*5. Muestra el email del usuario que ha creado más posts.
+a. Aquí la tabla resultante tiene un único registro y muestra solo el email.*/
+
+select u.email from usuarios u right join post ps on u.usuario_id = ps.usuario_id
+group by u.email
+order by  count(*) desc limit 1;
+
+/*6. Muestra la fecha del último post de cada usuario.*/
+select u.usuario_id "usuario",max(ps.fecha_creacion) "fecha ultimo post" from usuarios u join post ps on u.usuario_id = ps.usuario_id
+group by u.usuario_id;
+
+/*7. Muestra el título y contenido del post (artículo) con más comentarios.*/
+select ps.titulo,ps.contenido,count(*)"cantidad de comentarios" from post ps right join comentarios c on ps.post_id=c.post_id
+group by ps.titulo,ps.contenido
+order by  count(*) desc limit 1;
+
+/*8. Muestra en una tabla el título de cada post, el contenido de cada post y el contenido
+de cada comentario asociado a los posts mostrados, junto con el email del usuario
+que lo escribió*/
+SELECT ps.titulo,ps.contenido,c.contenido,u.email FROM post ps
+left join comentarios c on ps.post_id = c.post_id
+left join usuarios u on c.usuario_id = u.usuario_id
+where c.contenido is not null and u.email is not null;
+
+
+
+/*9. Muestra el contenido del último comentario de cada usuario.*/
+select u.nombre||' '||u.apellido as "Usuario", c.fecha_creacion "Fecha ultimo Comentario", c.contenido "Ultimo comentario"
+from usuarios u
+left join (
+    select usuario_id, max(fecha_creacion) as max_fecha
+    from comentarios
+    group by usuario_id
+) c_max on u.usuario_id = c_max.usuario_id
+left join comentarios c on c_max.usuario_id = c.usuario_id and c_max.max_fecha = c.fecha_creacion
+where c_max.usuario_id is not NULL;
+
+/*10. Muestra los emails de los usuarios que no han escrito ningún comentario.*/
+select u.email from usuarios u
+left join comentarios c on u.usuario_id = c.usuario_id
+where c.comentario_id is NULL;
